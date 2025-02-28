@@ -1,42 +1,31 @@
+import { Metadata } from "next";
 import { Suspense } from "react";
 import MovieInfo, { getMovie } from "../../../../components/movie-info";
 import MovieVideos from "../../../../components/movie-videos";
 
-type Props ={
-    params: {id: string},
-    searchParams: {region: string; page: Number}
+interface Props {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
 }
 
-export async function generateMetadata({params, searchParams}: Props){
-    const {id} = await params;
-    const movie = await getMovie(id);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const resolvedParams = await params;
+    const movie = await getMovie(resolvedParams.id);
     return {
         title: movie.title,
-    }
+    };
 }
 
-export default async function MovieDetail({params, searchParams}: Props) {
-    
-    const {id} = await params;
-    const {region, page} = await searchParams;
-
-    /*
-    1번타입
-    const movie = await getMovie(id);
-    const videos = await getVideos(id);
-
-    2번타입
-    const [movie, videos] = await Promise.all([getMovie(id), getVideos(id)])
-    */
-
+export default async function Page({ params }: Props) {
+    const resolvedParams = await params;
     return (
         <div>
             <Suspense fallback={<h1>Loading movie info</h1>}>
-                <MovieInfo id={id} />
+                <MovieInfo id={resolvedParams.id} />
             </Suspense>
             <Suspense fallback={<h1>Loading movie videos</h1>}>
-                <MovieVideos id={id} />
+                <MovieVideos id={resolvedParams.id} />
             </Suspense>
         </div>
-    )
+    );
 }
